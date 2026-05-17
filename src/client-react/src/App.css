@@ -1,0 +1,36 @@
+.app {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 50px auto;
+  text-align: center;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+.api-message {
+  color: #555;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 5px;
+}
+
+.users-section {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.users-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.users-section li {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #fff;
+  border-radius: 5px;
+  border: 1px solid #eee;
+}

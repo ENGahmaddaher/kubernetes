@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-react
+  namespace: microservices-demo
+  labels:
+    app: client-react
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client-react
+  template:
+    metadata:
+      labels:
+        app: client-react
+    spec:
+      containers:
+      - name: client-react
+        image: entransistor/client-react:v1.0.2
+        ports:
+        - containerPort: 8080
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
