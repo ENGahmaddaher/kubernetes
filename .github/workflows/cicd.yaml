@@ -1,0 +1,113 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    #paths:
+    #  - 'src/**'
+   #   - 'kubernetes_aws/**'
+  #workflow_dispatch:
+
+env:
+  REGISTRY: docker.io
+  IMAGE_PREFIX: entransistor
+
+jobs:
+  build-and-push:
+    name: Build, Scan & Push Images
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build & Push API Node
+      uses: docker/build-push-action@v5
+      with:
+        context: src/api-node
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.IMAGE_PREFIX }}/api-node:${{ github.sha }}
+          ${{ env.IMAGE_PREFIX }}/api-node:latest
+
+    - name: Build & Push Client React
+      uses: docker/build-push-action@v5
+      with:
+        context: src/client-react
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.IMAGE_PREFIX }}/client-react:${{ github.sha }}
+          ${{ env.IMAGE_PREFIX }}/client-react:latest
+
+    - name: Build & Push Postgres Migrations
+      uses: docker/build-push-action@v5
+      with:
+        context: src/postgres-migrations
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.IMAGE_PREFIX }}/postgres-migrations:${{ github.sha }}
+          ${{ env.IMAGE_PREFIX }}/postgres-migrations:latest
+
+  scan-images:
+    name: Scan Images with Trivy
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+    - name: Scan API Node Image
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.IMAGE_PREFIX }}/api-node:${{ github.sha }}
+        format: 'table'
+        exit-code: '0'
+        severity: 'HIGH,CRITICAL'
+
+    - name: Scan Client React Image
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.IMAGE_PREFIX }}/client-react:${{ github.sha }}
+        format: 'table'
+        exit-code: '0'
+        severity: 'HIGH,CRITICAL'
+
+  update-manifests:
+    name: Update Kubernetes Manifests
+    needs: [build-and-push, scan-images]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Update API Node Image Tag
+      run: |
+        cd kubernetes_aws/base/api-node
+        sed -i "s|image: entransistor/api-node:.*|image: entransistor/api-node:${{ github.sha }}|g" deployment.yaml
+
+    - name: Update Client React Image Tag
+      run: |
+        cd kubernetes_aws/base/client-react
+        sed -i "s|image: entransistor/client-react:.*|image: entransistor/client-react:${{ github.sha }}|g" deployment.yaml
+
+    - name: Update Postgres Migrations Image Tag
+      run: |
+        cd kubernetes_aws/base/postgresql
+        sed -i "s|image: entransistor/postgres-migrations:.*|image: entransistor/postgres-migrations:${{ github.sha }}|g" migration-job.yaml
+
+    - name: Commit & Push Changes
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add kubernetes_aws/
+        git diff --quiet && git diff --staged --quiet || git commit -m "ci: update image tags to ${{ github.sha }}"
+        git push
