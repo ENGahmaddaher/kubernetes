@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: api-node
-        image: entransistor/api-node:3d76ebe78784b01ec0dcc2a4dde374f2559a4445
+        image: entransistor/api-node:5f2bfbf6fbd7687a899a0c1229a00701350bf43f
         ports:
         - containerPort: 3001
           name: http
