@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: client-react
-        image: entransistor/client-react:bcc5288ef31926d47bddfd5c46976b78adb93913
+        image: entransistor/client-react:8cb6ff1cd66b313e8695f6734ca4bec2ba67a883
         ports:
         - containerPort: 8080
           name: http
