@@ -22,7 +22,7 @@ spec:
           echo "PostgreSQL is ready!"
       containers:
       - name: migration
-        image: entransistor/postgres-migrations:f738e0ab4c9b7d2147313d0a757fdc7f89403283
+        image: entransistor/postgres-migrations:c4db6f6035c7b894371cd761ca1a80514684333f
         env:
         - name: DATABASE_URL
           valueFrom:
