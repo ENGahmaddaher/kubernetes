@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - main
-    #paths:
-    #  - 'src/**'
-   #   - 'kubernete_aws/**'
-  #workflow_dispatch:
+    paths:
+      - 'src/**'
+      - 'kubernete_aws/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
 
 env:
   REGISTRY: docker.io
@@ -88,6 +92,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Update API Node Image Tag
       run: |
@@ -111,3 +117,5 @@ jobs:
         git add kubernete_aws/
         git diff --quiet && git diff --staged --quiet || git commit -m "ci: update image tags to ${{ github.sha }}"
         git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
