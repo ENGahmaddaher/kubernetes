@@ -17,10 +17,10 @@ labels:
 images:
 - name: entransistor/api-node
   newName: entransistor/api-node
-  newTag: ed6fc81791f9c1434642547cd989538e8d208a9f
+  newTag: 724a043daf95d12c70016f8292203d5d5a974304
 - name: entransistor/client-react
   newName: entransistor/client-react
-  newTag: ed6fc81791f9c1434642547cd989538e8d208a9f
+  newTag: 724a043daf95d12c70016f8292203d5d5a974304
 - name: postgres
   newName: postgres
   newTag: 16-alpine
