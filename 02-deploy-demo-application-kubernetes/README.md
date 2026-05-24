@@ -14,7 +14,7 @@ The following shows the layout of this directory:
 ```
 ├── ArgoCD.yaml
 ├── kind-config.yaml
-├── kubernete_aws
+├── 02-deploy-demo-application-kubernetes
 │ ├── base
 │ │ ├── api-node
 │ │ │ ├── Deployment.yaml

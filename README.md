@@ -14,7 +14,7 @@ This section defines kubernetes manifests to deploy:
 ```
 ├── ArgoCD.yaml
 ├── kind-config.yaml
-├── kubernete_aws
+├── 02-deploy-demo-application-kubernetes
 │ ├── base
 │ │ ├── api-node
 │ │ │ ├── Deployment.yaml
@@ -44,7 +44,7 @@ This section defines kubernetes manifests to deploy:
 │ └── patches
 │ ├── replicas.yaml
 │ └── ingress-host.yaml
-├── terraform
+├── 03-terraform-eks
 │ ├── versions.tf
 │ ├── variables.tf
 │ ├── main.tf
@@ -54,8 +54,8 @@ This section defines kubernetes manifests to deploy:
 │ ├── iam.tf
 │ ├── kubernetes.tf
 │ ├── outputs.tf
-│ └── terraform.tfvars.example
-├── src
+│ └── 03-terraform-eks.tfvars.example
+├── 01-demo-application
 │ ├── api-node
 │ ├── client-react
 │ └── postgres-migrations
@@ -92,7 +92,7 @@ The database migration is structured as a Kubernetes `Job`.
 ### Terraform (AWS EKS Infrastructure)
 Apply with:
 ```bash
-cd terraform
+cd 03-terraform-eks
 terraform init
 terraform plan
 terraform apply

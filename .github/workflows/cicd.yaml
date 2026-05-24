@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'src/**'              # فقط عندما يتغير الكود، وليس manifests
-  workflow_dispatch:          # يمكن تشغيله يدوياً
+      - '01-demo-application/**'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -35,20 +35,20 @@ jobs:
 
     - name: Run API tests
       run: |
-        cd src/api-node
+        cd 01-demo-application/api-node
         npm ci
         npm test || echo "No tests found"
 
     - name: Run React tests
       run: |
-        cd src/client-react
+        cd 01-demo-application/client-react
         npm ci
         npm test || echo "No tests found"
 
     - name: Build & Push API Node
       uses: docker/build-push-action@v5
       with:
-        context: src/api-node
+        context: 01-demo-application/api-node
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
@@ -58,7 +58,7 @@ jobs:
     - name: Build & Push Client React
       uses: docker/build-push-action@v5
       with:
-        context: src/client-react
+        context: 01-demo-application/client-react
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
@@ -68,7 +68,7 @@ jobs:
     - name: Build & Push Postgres Migrations
       uses: docker/build-push-action@v5
       with:
-        context: src/postgres-migrations
+        context: 01-demo-application/postgres-migrations
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
@@ -121,19 +121,19 @@ jobs:
 
     - name: Update images with kustomize
       run: |
-        cd kubernete_aws/base
+        cd 02-deploy-demo-application-kubernetes/base
         kustomize edit set image entransistor/api-node=${{ env.IMAGE_PREFIX }}/api-node:${{ github.sha }}
         kustomize edit set image entransistor/client-react=${{ env.IMAGE_PREFIX }}/client-react:${{ github.sha }}
 
     #- name: Update migration image
      # run: |
-      #  cd kubernete_aws/base/postgresql
+      #  cd 02-deploy-demo-application-kubernetes/base/postgresql
        # kustomize edit set image entransistor/postgres-migrations=${{ env.IMAGE_PREFIX }}/postgres-migrations:${{ github.sha }}
 
     - name: Commit & Push Changes
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add kubernete_aws/
+        git add 02-deploy-demo-application-kubernetes/
         git diff --quiet && git diff --staged --quiet || git commit -m "ci: update images to ${{ github.sha }} [skip ci]"
         git push

@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/ENGahmaddaher/kubernetes
     targetRevision: main
-    path: kubernete_aws/base
+    path: 02-deploy-demo-application-kubernetes/base
     directory:
       recurse: true
   destination:

@@ -32,9 +32,9 @@ It's deployed to EKS via `kubectl apply`, stored in etcd, and scheduled by Kuber
 
 | File | Purpose |
 |------|---------|
-| `terraform/s3.tf` | S3 bucket for backups |
-| `terraform/iam.tf` | IAM Role + S3 policy |
-| `terraform/kubernetes.tf` | ServiceAccount with IRSA |
+| `03-terraform-eks/s3.tf` | S3 bucket for backups |
+| `03-terraform-eks/iam.tf` | IAM Role + S3 policy |
+| `03-terraform-eks/kubernetes.tf` | ServiceAccount with IRSA |
 | `CronJob.yaml` | Scheduled etcd backup job |
 | `ServiceAccount.yaml` | SA with IAM role annotation |
 
