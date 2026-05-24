@@ -10,6 +10,6 @@ spec:
   selector:
     app: client-react
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 8765
+    targetPort: 8765
     name: http

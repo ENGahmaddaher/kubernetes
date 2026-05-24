@@ -6,7 +6,7 @@ metadata:
   labels:
     app: postgres
 spec:
-  serviceName: postgres    # يربط StatefulSet بـ Headless Service أعلاه
+  serviceName: postgres
   replicas: 1
   selector:
     matchLabels:
@@ -27,13 +27,38 @@ spec:
           valueFrom:
             secretKeyRef:
               name: pg-secret
-              key: DB_USER
+              key: POSTGRES_USER
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: pg-secret
-              key: DB_PASSWORD
+              key: POSTGRES_PASSWORD
         - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: pg-secret
+              key: POSTGRES_DB
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: pg-configmap
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: pg-configmap
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: pg-secret
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pg-secret
+              key: DB_PASSWORD
+        - name: DB_NAME
           valueFrom:
             secretKeyRef:
               name: pg-secret
@@ -50,4 +75,4 @@ spec:
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
-          storage: 1Gi
+          storage: 10Gi

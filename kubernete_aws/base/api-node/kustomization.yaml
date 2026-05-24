@@ -4,3 +4,7 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - configMap.yaml
+  - pdb.yaml
+  - autoscalenode.yaml
+  - network-policy.yaml

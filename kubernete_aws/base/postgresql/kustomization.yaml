@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - service.yaml
   - statefulset.yaml
-  - secret.yaml
+  - pg-secret.yaml
+  - pg-configmap.yaml
   - migration-job.yaml
-  - migration-secret.yaml
+  - verticalPolicyPG.yaml

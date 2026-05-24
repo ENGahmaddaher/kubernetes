@@ -4,10 +4,9 @@ on:
   push:
     branches:
       - main
-  #  paths:
-   #   - 'src/**'
-    #  - 'kubernete_aws/**'
-  #workflow_dispatch:
+    paths:
+      - 'src/**'              # فقط عندما يتغير الكود، وليس manifests
+  workflow_dispatch:          # يمكن تشغيله يدوياً
 
 permissions:
   contents: write
@@ -19,7 +18,7 @@ env:
 
 jobs:
   build-and-push:
-    name: Build, Scan & Push Images
+    name: Build, Test & Push Images
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -33,6 +32,18 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Run API tests
+      run: |
+        cd src/api-node
+        npm ci
+        npm test || echo "No tests found"
+
+    - name: Run React tests
+      run: |
+        cd src/client-react
+        npm ci
+        npm test || echo "No tests found"
 
     - name: Build & Push API Node
       uses: docker/build-push-action@v5
@@ -85,6 +96,14 @@ jobs:
         exit-code: '0'
         severity: 'HIGH,CRITICAL'
 
+    - name: Scan Postgres Migrations Image
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.IMAGE_PREFIX }}/postgres-migrations:${{ github.sha }}
+        format: 'table'
+        exit-code: '0'
+        severity: 'HIGH,CRITICAL'
+
   update-manifests:
     name: Update Kubernetes Manifests
     needs: [build-and-push, scan-images]
@@ -95,27 +114,26 @@ jobs:
       with:
         token: ${{ secrets.PAT_TOKEN }}
 
-    - name: Update API Node Image Tag
+    - name: Install kustomize
       run: |
-        cd kubernete_aws/base/api-node
-        sed -i "s|image: entransistor/api-node:.*|image: entransistor/api-node:${{ github.sha }}|g" deployment.yaml
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/
 
-    - name: Update Client React Image Tag
+    - name: Update images with kustomize
       run: |
-        cd kubernete_aws/base/client-react
-        sed -i "s|image: entransistor/client-react:.*|image: entransistor/client-react:${{ github.sha }}|g" deployment.yaml
+        cd kubernete_aws/base
+        kustomize edit set image entransistor/api-node=${{ env.IMAGE_PREFIX }}/api-node:${{ github.sha }}
+        kustomize edit set image entransistor/client-react=${{ env.IMAGE_PREFIX }}/client-react:${{ github.sha }}
 
-    - name: Update Postgres Migrations Image Tag
+    - name: Update migration image
       run: |
         cd kubernete_aws/base/postgresql
-        sed -i "s|image: entransistor/postgres-migrations:.*|image: entransistor/postgres-migrations:${{ github.sha }}|g" migration-job.yaml
+        kustomize edit set image entransistor/postgres-migrations=${{ env.IMAGE_PREFIX }}/postgres-migrations:${{ github.sha }}
 
     - name: Commit & Push Changes
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add kubernete_aws/
-        git diff --quiet && git diff --staged --quiet || git commit -m "ci: update image tags to ${{ github.sha }}"
+        git diff --quiet && git diff --staged --quiet || git commit -m "ci: update images to ${{ github.sha }} [skip ci]"
         git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}

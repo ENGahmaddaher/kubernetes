@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pg-configmap
+  namespace: microservices-demo
+data:
+  DB_HOST: postgres-0.postgres.microservices-demo.svc.cluster.local
+  DB_PORT: "5432"

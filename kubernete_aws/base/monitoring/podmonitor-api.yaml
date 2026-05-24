@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: api-node-monitor
+  namespace: microservices-demo
+  labels:
+    release: prometheus           # مهم لـ kube-prometheus-stack
+    app: api-node
+spec:
+  selector:
+    matchLabels:
+      app: api-node               # يختار Pods مع هذا الـ label
+  namespaceSelector:
+    matchNames:
+      - microservices-demo
+  podMetricsEndpoints:
+    - port: http                  # port name من deployment (containerPort: 3001 name: http)
+      interval: 30s
+      path: /metrics              # إذا كان تطبيقك يقدم metrics على /metrics

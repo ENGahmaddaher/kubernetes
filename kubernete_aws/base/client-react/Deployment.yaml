@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-react
+  namespace: microservices-demo
+  labels:
+    app: client-react
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: client-react
+  template:
+    metadata:
+      labels:
+        app: client-react
+    spec:
+      containers:
+      - name: client-react
+        image: entransistor/client-react:v2.0.0
+        ports:
+        - containerPort: 8765
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 120m
+            memory: 148Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8765
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8765
+          initialDelaySeconds: 15
+          periodSeconds: 20

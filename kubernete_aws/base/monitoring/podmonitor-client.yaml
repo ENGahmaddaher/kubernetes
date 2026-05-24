@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: client-react-monitor
+  namespace: microservices-demo
+  labels:
+    release: prometheus
+    app: client-react
+spec:
+  selector:
+    matchLabels:
+      app: client-react
+  namespaceSelector:
+    matchNames:
+      - microservices-demo
+  podMetricsEndpoints:
+    - port: http                  # port name من deployment (containerPort: 8080 name: http)
+      interval: 30s
+      path: /metrics

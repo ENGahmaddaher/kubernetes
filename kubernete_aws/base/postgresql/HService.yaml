@@ -6,7 +6,7 @@ metadata:
   labels:
     app: postgres
 spec:
-  clusterIP: None          # Headless Service - مهم لـ StatefulSet!
+  clusterIP: None
   selector:
     app: postgres
   ports:

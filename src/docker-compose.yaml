@@ -19,7 +19,7 @@ services:
       - "5432:5432"
 
   api-node:
-    image: entransistor/api-node:v1.0.0
+    image: entransistor/api-node:v2.0.0
     container_name: microservices-api
     environment:
       DB_HOST: postgres
@@ -37,12 +37,12 @@ services:
         condition: service_healthy
 
   client-react:
-    image: entransistor/client-react:v1.0.2
+    image: entransistor/client-react:v2.0.0
     container_name: microservices-react
     networks:
       - microservices-network
     ports:
-      - "8080:8080"
+      - "8765:8765"
     depends_on:
       - api-node
 

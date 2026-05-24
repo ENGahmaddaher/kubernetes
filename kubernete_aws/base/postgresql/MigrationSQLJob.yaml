@@ -15,17 +15,17 @@ spec:
         - sh
         - -c
         - |
-          until pg_isready -h postgres-0.postgres -U admin -d mydb; do
+          until pg_isready -h postgres-0.postgres.microservices-demo.svc.cluster.local -U admin -d mydb; do
             echo "Waiting for postgres...";
             sleep 2;
           done
           echo "PostgreSQL is ready!"
       containers:
       - name: migration
-        image: entransistor/postgres-migrations:495e11520ea3a712d4e79e0ccbd90037feb9b29e
+        image: entransistor/postgres-migrations:v2.0.0
         env:
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: migration-secret
+              name: pg-secret
               key: DATABASE_URL

@@ -21,4 +21,4 @@ spec:
           service:
             name: client-react
             port:
-              number: 8080
+              number: 8765

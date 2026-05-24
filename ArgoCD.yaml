@@ -3,12 +3,16 @@ kind: Application
 metadata:
   name: microservices-demo
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: https://github.com/ENGahmaddaher/kubernetes
     targetRevision: main
     path: kubernete_aws/base
+    directory:
+      recurse: true
   destination:
     server: https://kubernetes.default.svc
     namespace: microservices-demo
@@ -16,5 +20,14 @@ spec:
     automated:
       prune: true
       selfHeal: true
+      allowEmpty: false
     syncOptions:
       - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
