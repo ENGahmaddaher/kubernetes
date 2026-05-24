@@ -1,0 +1,81 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-backup
+  namespace: kube-system
+spec:
+  # كل 6 ساعات
+  schedule: "0 */6 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: etcd-backup-sa
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: ""
+          tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+          containers:
+          - name: etcd-backup
+            image: amazon/aws-cli:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              
+             
+              BACKUP_DIR=/backup
+              mkdir -p $BACKUP_DIR
+              
+             
+              BACKUP_FILE="etcd-snapshot-$(date +%Y%m%d-%H%M%S).db"
+              
+            
+              ETCDCTL_API=3 etcdctl \
+                --endpoints=https://127.0.0.1:2379 \
+                --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+                --cert=/etc/kubernetes/pki/etcd/server.crt \
+                --key=/etc/kubernetes/pki/etcd/server.key \
+                snapshot save $BACKUP_DIR/$BACKUP_FILE
+              
+              echo "Etcd snapshot created: $BACKUP_FILE"
+              
+           
+              aws s3 cp $BACKUP_DIR/$BACKUP_FILE s3://microservices-demo-etcd-backup/etcd-backups/$BACKUP_FILE
+              
+              echo "Backup uploaded to S3: $BACKUP_FILE"
+              
+             
+              aws s3 ls s3://microservices-demo-etcd-backup/etcd-backups/ | sort | head -n -7 | awk '{print $4}' | while read -r old_backup; do
+                aws s3 rm "s3://microservices-demo-etcd-backup/etcd-backups/$old_backup"
+                echo "Deleted old backup: $old_backup"
+              done
+            volumeMounts:
+            - name: etcd-certs
+              mountPath: /etc/kubernetes/pki/etcd
+              readOnly: true
+            - name: backup
+              mountPath: /backup
+            env:
+            - name: AWS_REGION
+              value: "us-east-1"
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+          volumes:
+          - name: etcd-certs
+            hostPath:
+              path: /etc/kubernetes/pki/etcd
+              type: Directory
+          - name: backup
+            emptyDir: {}
+          restartPolicy: OnFailure
