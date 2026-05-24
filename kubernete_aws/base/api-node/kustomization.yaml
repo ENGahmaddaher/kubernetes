@@ -2,9 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - deployment.yaml
-  - service.yaml
+  - Deployment.yaml
+  - Service.yaml
   - configMap.yaml
-  - pdb.yaml
-  - autoscalenode.yaml
-  - network-policy.yaml
+  - PodDisruptionBudget.yaml
+  - AutoScalingHPA.yaml
+  - NetworkPolicy.yaml

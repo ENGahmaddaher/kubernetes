@@ -6,12 +6,13 @@ resources:
 - postgresql/
 - api-node/
 - client-react/
-- ingress.yaml
+- Ingress.yaml
 
 namespace: microservices-demo
 
-commonLabels:
-  app.kubernetes.io/managed-by: kustomize
+labels:
+- pairs:
+    app.kubernetes.io/managed-by: kustomize
 
 images:
 - name: entransistor/api-node

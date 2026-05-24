@@ -4,7 +4,7 @@ echo "🚀 Starting services..."
 docker-compose up -d
 
 echo "⏳ Waiting for PostgreSQL to be ready..."
-sleep 15
+sleep 10
 
 echo "📦 Running migrations..."
 docker run --rm \

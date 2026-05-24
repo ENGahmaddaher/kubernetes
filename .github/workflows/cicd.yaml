@@ -125,10 +125,10 @@ jobs:
         kustomize edit set image entransistor/api-node=${{ env.IMAGE_PREFIX }}/api-node:${{ github.sha }}
         kustomize edit set image entransistor/client-react=${{ env.IMAGE_PREFIX }}/client-react:${{ github.sha }}
 
-    - name: Update migration image
-      run: |
-        cd kubernete_aws/base/postgresql
-        kustomize edit set image entransistor/postgres-migrations=${{ env.IMAGE_PREFIX }}/postgres-migrations:${{ github.sha }}
+    #- name: Update migration image
+     # run: |
+      #  cd kubernete_aws/base/postgresql
+       # kustomize edit set image entransistor/postgres-migrations=${{ env.IMAGE_PREFIX }}/postgres-migrations:${{ github.sha }}
 
     - name: Commit & Push Changes
       run: |

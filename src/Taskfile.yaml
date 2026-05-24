@@ -1,0 +1,46 @@
+version: "3"
+
+tasks:
+  up:
+    desc: "Start all services locally with docker-compose"
+    cmds:
+      - docker-compose up -d
+
+  down:
+    desc: "Stop all services"
+    cmds:
+      - docker-compose down
+
+  logs:
+    desc: "View logs of all services"
+    cmds:
+      - docker-compose logs -f
+
+  build:
+    desc: "Build all Docker images"
+    cmds:
+      - docker build -t entransistor/api-node:v2.0.0 -f api-node/Dockerfile ./api-node
+      - docker build -t entransistor/client-react:v2.0.0 -f client-react/Dockerfile ./client-react
+      - docker build -t entransistor/postgres-migrations:v2.0.0 -f postgres-migrations/Dockerfile ./postgres-migrations
+
+  migrate:
+    desc: "Run database migrations locally"
+    cmds:
+      - docker run --network src_microservices-network -e "DATABASE_URL=postgres://admin:secret123@postgres:5432/mydb?sslmode=disable" --rm entransistor/postgres-migrations:v2.0.0
+
+  test-api:
+    desc: "Test API endpoint"
+    cmds:
+      - curl http://localhost:3001/health
+      - curl http://localhost:3001/api/users
+
+  test-react:
+    desc: "Open React in browser"
+    cmds:
+      - echo "Open http://localhost:4321 in your browser"
+
+  clean:
+    desc: "Remove all containers, volumes, and images"
+    cmds:
+      - docker-compose down -v
+      - docker system prune -f

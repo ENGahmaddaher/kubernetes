@@ -1,0 +1,171 @@
+version: "3"
+
+tasks:
+  # Kind Cluster Management
+  kind-create:
+    desc: "Create Kind cluster"
+    cmds:
+      - kind create cluster --config ../kind-config.yaml
+      - kubectl cluster-info
+
+  kind-delete:
+    desc: "Delete Kind cluster"
+    cmds:
+      - kind delete cluster
+
+  # Kubernetes Components Installation
+  install-metrics-server:
+    desc: "Install metrics-server for Kind"
+    cmds:
+      - kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+      - kubectl patch deployment metrics-server -n kube-system --patch "$(cat metric-server-patch.yaml)"
+      - kubectl wait --for=condition=ready pod -l k8s-app=metrics-server -n kube-system --timeout=60s
+
+  install-ingress:
+    desc: "Install NGINX Ingress Controller"
+    cmds:
+      - kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/kind/deploy.yaml
+      - kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+
+  install-argocd:
+    desc: "Install ArgoCD"
+    cmds:
+      - kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+      - kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=120s
+
+  # ArgoCD Commands
+  argocd-password:
+    desc: "Get ArgoCD admin password"
+    cmds:
+      - kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      - echo ""
+
+  argocd-portforward:
+    desc: "Port-forward ArgoCD UI to localhost:8080"
+    cmds:
+      - kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+  # Kustomize Commands
+  build:
+    desc: "Build Kustomize manifests (preview)"
+    cmds:
+      - kustomize build .
+
+  apply:
+    desc: "Apply Kustomize manifests"
+    cmds:
+      - kubectl apply -k .
+
+  delete:
+    desc: "Delete Kustomize manifests"
+    cmds:
+      - kubectl delete -k .
+
+  images:
+    desc: "Show current images in kustomization.yaml"
+    cmds:
+      - cat kustomization.yaml | grep -A 10 "images:"
+
+  update-images:
+    desc: "Update image tags (example)"
+    cmds:
+      - kustomize edit set image entransistor/api-node=entransistor/api-node:latest
+      - kustomize edit set image entransistor/client-react=entransistor/client-react:latest
+
+  # Deployment Commands
+  deploy:
+    desc: "Deploy all microservices to Kind"
+    cmds:
+      - kubectl apply -k .
+      - echo "Deployment completed"
+
+  delete-all:
+    desc: "Delete everything in microservices-demo namespace"
+    cmds:
+      - kubectl delete namespace microservices-demo --ignore-not-found
+
+  # Monitoring Commands
+  status:
+    desc: "Show status of all pods"
+    cmds:
+      - kubectl get pods -n microservices-demo
+
+  top:
+    desc: "Show resource usage"
+    cmds:
+      - kubectl top nodes
+      - kubectl top pods -n microservices-demo
+
+  events:
+    desc: "Show recent events"
+    cmds:
+      - kubectl get events -n microservices-demo --sort-by='.lastTimestamp'
+
+  describe-pods:
+    desc: "Describe all pods in namespace"
+    cmds:
+      - kubectl describe pods -n microservices-demo
+
+  # Logs Commands
+  logs-api:
+    desc: "Show logs of api-node"
+    cmds:
+      - kubectl logs -l app=api-node -n microservices-demo --tail=50
+
+  logs-react:
+    desc: "Show logs of client-react"
+    cmds:
+      - kubectl logs -l app=client-react -n microservices-demo --tail=50
+
+  logs-postgres:
+    desc: "Show logs of postgres"
+    cmds:
+      - kubectl logs -l app=postgres -n microservices-demo --tail=50
+
+  # Port-Forward Commands
+  portforward-api:
+    desc: "Port-forward API to localhost:3001"
+    cmds:
+      - kubectl port-forward svc/api-node -n microservices-demo 3001:3001
+
+  portforward-react:
+    desc: "Port-forward React to localhost:4321"
+    cmds:
+      - kubectl port-forward svc/client-react -n microservices-demo 4321:4321
+
+  # Database Commands
+  exec-postgres:
+    desc: "Enter PostgreSQL pod"
+    cmds:
+      - kubectl exec -it postgres-0 -n microservices-demo -- psql -U admin -d mydb
+
+  # Restart Commands
+  restart-api:
+    desc: "Restart api-node deployment"
+    cmds:
+      - kubectl rollout restart deployment/api-node -n microservices-demo
+
+  restart-react:
+    desc: "Restart client-react deployment"
+    cmds:
+      - kubectl rollout restart deployment/client-react -n microservices-demo
+
+  # Setup All (One Command)
+  setup:
+    desc: "Setup complete Kind cluster with all components"
+    cmds:
+      - task: kind-create
+      - task: install-metrics-server
+      - task: install-ingress
+      - task: install-argocd
+      - task: deploy
+      - echo "Complete setup finished!"
+
+  # Destroy All (One Command)
+  destroy:
+    desc: "Destroy everything"
+    cmds:
+      - task: delete-all
+      - task: kind-delete
+      - echo "Everything destroyed"
