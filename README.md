@@ -10,36 +10,6 @@
 [![React](https://img.shields.io/badge/React-Frontend-61DAFB?logo=react&logoColor=black)](https://reactjs.org)
 [![Node.js](https://img.shields.io/badge/Node.js-API-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 
----
-
-## 📋 **What's Inside?**
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🏗️ Full Stack Microservices │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ │
-│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
-│ │ React │────▶│ Node.js │────▶│ PostgreSQL │ │
-│ │ Frontend │ │ API │ │ Database │ │
-│ │ :4321 │ │ :3001 │ │ :5432 │ │
-│ └─────────────┘ └─────────────┘ └─────────────┘ │
-│ │ │ │ │
-│ └───────────────────┼───────────────────┘ │
-│ │ │
-│ ┌────────▼────────┐ │
-│ │ Ingress NGINX │ │
-│ │ (Load Balancer)│ │
-│ └────────┬────────┘ │
-│ │ │
-│ ┌──────────────┼──────────────┐ │
-│ │ │ │ │
-│ ┌──────▼──────┐ ┌──────▼──────┐ ┌──────▼──────┐ │
-│ │ Prometheus │ │ Grafana │ │ ArgoCD │ │
-│ │ Monitoring │ │ Dashboards │ │ GitOps │ │
-│ └─────────────┘ └─────────────┘ └─────────────┘ │
-│ │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-text
 
 ---
 
@@ -95,6 +65,7 @@ text
 ---
 
 ## 📁 **Project Structure**
+```
 📂 demo-microservices/
 │
 ├── 📂 01-demo-application/
@@ -159,7 +130,7 @@ text
 ├── ArgoCD.yaml
 ├── kind-config.yaml
 └── README.md
-
+```
 text
 
 ---
@@ -168,7 +139,7 @@ text
 
 ### **Prerequisites**
 
-```bash
+
 # Required tools
 ✅ kubectl
 ✅ kind (or AWS CLI for EKS)
@@ -176,7 +147,7 @@ text
 ✅ task
 ✅ terraform (for AWS)
 Option 1: Local Development (Kind)
-bash
+```bash
 # 1. Create Kind cluster
 task kind-create
 
@@ -190,8 +161,9 @@ task deploy
 
 # 4. Check status
 task status
+```
 Option 2: AWS EKS (Production)
-bash
+```bash
 # 1. Deploy infrastructure
 cd 03-terraform-eks
 terraform init
@@ -203,26 +175,28 @@ aws eks update-kubeconfig --region us-east-1 --name microservices-demo
 
 # 3. Deploy application (same as Option 1)
 task deploy
+```
 📊 Access Services
 Application
-bash
+```bash
 # Port-forward Ingress
 kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
 # Open: http://localhost:8080
+```
 Service	URL	Credentials
 React Frontend	/	Public
 Node.js API	/api	Public
 Monitoring (Grafana)
-bash
+```bash
 kubectl port-forward -n monitoring svc/monitoring-grafana 3000:80
+```
 # Open: http://localhost:3000
 Login	Password
 admin	admin123
 GitOps (ArgoCD)
-bash
+```bash
 task argocd-portforward
 # Open: http://localhost:8443
-bash
 # Get admin password
 task argocd-password
 # Login: admin / <output-password>
@@ -259,6 +233,7 @@ task describe-pods	Describe all pods
 task events	Show recent events
 task setup	Complete setup (cluster + components + deploy)
 task destroy	Destroy everything
+```
 🔧 Kubernetes Components Explained
 Horizontal Pod Autoscaler (HPA)
 yaml
@@ -385,9 +360,11 @@ cp terraform.tfvars.example terraform.tfvars
 vim terraform.tfvars
 
 # Deploy
+```
 terraform init
 terraform plan
 terraform apply
+```
 📊 Troubleshooting & Health Checks
 Quick Health Check
 bash
@@ -421,6 +398,7 @@ add-labels-to-all-pods.sh	Bulk label addition
 🧹 Cleanup
 bash
 # Delete everything in microservices-demo namespace
+```
 task delete-all
 
 # Destroy Kind cluster
@@ -429,6 +407,7 @@ task kind-delete
 # Destroy AWS infrastructure
 cd 03-terraform-eks
 terraform destroy
+```
 📚 References
 Kubernetes Documentation
 
